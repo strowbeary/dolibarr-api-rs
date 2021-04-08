@@ -5,6 +5,8 @@ extern crate serde_json;
 use serde_json::json;
 use serde::Deserialize;
 use std::collections::HashMap;
+use reqwest::blocking::Response;
+use reqwest::Error;
 
 #[derive(Deserialize, Debug)]
 struct ApiError {
@@ -49,22 +51,29 @@ impl Client {
 
     pub fn login_with_credential(&mut self, username: String, password: String) -> Result<Self, reqwest::Error> {
         let mut api_client = self.clone();
-        let response = api_client.client
+        match api_client.client
             .post(&self.url("login"))
             .header("Accept", "application/json")
             .json(&json!({
                 "login": username,
                 "password": password
             }))
-            .send()?;
-        let result = response.json::<ApiResponse<ApiCredentials>>()?;
-        match result {
-            ApiResponse::Success(data) => {
-                api_client.api_key = Some(data.token);
+            .send() {
+            Ok(response) => {
+                let result = response.json::<ApiResponse<ApiCredentials>>()?;
+                match result {
+                    ApiResponse::Success(data) => {
+                        api_client.api_key = Some(data.token);
+                    }
+                    ApiResponse::Error(_) => {}
+                }
+                Ok(api_client)
             }
-            ApiResponse::Error(_) => {}
+            Err(err) => {
+                println!("Error : {:?}", err);
+                Err(err)
+            }
         }
-        Ok(api_client)
     }
     pub fn login_yunohost(&mut self, username: String, password: String) -> Result<Self, reqwest::Error> {
         let mut api_client = self.clone();
@@ -98,13 +107,13 @@ mod tests {
 
     #[test]
     fn create_client() {
-        match Client::new("https://apps.coop1d.com/dolicoop/api/index.php".to_string())
-            .login_yunohost("remicaillot".to_string(), "MqppGCXUZf4weGg".to_string()) {
+        match Client::new("https://apps.coop1d.com/BOS/api/index.php".to_string())
+            .login_yunohost("alissonebos".to_string(), "alissonebos".to_string()) {
             Ok(mut client) => {
                 println!("Yunohost {:?}", client);
-                match client.login_with_credential("remicaillot".to_string(), "MqppGCXUZf4weGg".to_string()) {
+                match client.login_with_credential("alissonebos".to_string(), "alissonebos".to_string()) {
                     Ok(client) => { println!("Dolibarr {:?}", client) }
-                    Err(_) => {}
+                    Err(err) => { println!("{:?}", err) }
                 }
             }
             Err(err) => println!("Err {:?}", err)

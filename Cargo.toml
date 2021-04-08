@@ -3,6 +3,12 @@ name = "dolibarr"
 version = "0.1.0"
 authors = ["Rémi Caillot <r.caillot@maformationofficinale.com>"]
 edition = "2018"
+repository = "https://github.com/strowbeary/dolibarr-api-rs"
+license = "MIT"
+documentation = "https://docs.rs/viewy"
+readme = "./README.md"
+description = "Rust bindings to the REST Dolibarr API."
+keywords = ["Dolibarr", "api", "rest"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
